@@ -549,8 +549,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rb: {fileID: 1240897458}
+  _jumpHeight: 2
   _maxSpeed: 10
   _maxAcceleration: 10
+  _maxAirAcceleration: 1
+  _maxAirJumps: 1
+  _maxGroundAngle: 25
+  _probeDistance: 1
+  _maxSnapSpeed: 100
 --- !u!54 &1240897458
 Rigidbody:
   m_ObjectHideFlags: 0

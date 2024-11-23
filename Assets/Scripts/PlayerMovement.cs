@@ -40,17 +40,28 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField, Range(0f, 90f)]
     float _maxGroundAngle = 25f;
     
-    // Player State
-    public bool OnGround => _groundContactCount > 0;
+    // Metres
+    [SerializeField, Min(0f)]
+    float _probeDistance = 1f;
     
-    int _groundContactCount;
+    // Metres per second
+    [SerializeField, Range(0f, 100f)]
+    float _maxSnapSpeed = 100f;
+    
+    // Player State
+    bool OnGround => _groundContactCount > 0;
+    bool OnSteep => _steepContactCount > 0;
+    
+    int _groundContactCount, _steepContactCount;
     
     int _jumpPhase;
 
-    private Vector3 _contactNormal;
+    private Vector3 _contactNormal, _steepNormal;
+
+    private int _stepsSinceLastGrounded, _stepsSinceLastJump;
     
     // Calculated Values
-    
+
     float _minGroundDotProduct;
 
     private void OnValidate()
@@ -98,7 +109,9 @@ public class PlayerMovement : MonoBehaviour
     private void ClearState()
     {
         _groundContactCount = 0;
+        _steepContactCount = 0;
         _contactNormal = Vector3.zero;
+        _steepNormal = Vector3.zero;
     }
 
     void AdjustVelocity () 
@@ -122,8 +135,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void UpdateState()
     {
+        _stepsSinceLastGrounded++;
+        _stepsSinceLastJump++;
+        
         _velocity = _rb.velocity;
-        if (OnGround) {
+        if (OnGround || SnapToGround() || CheckSteepContacts())
+        {
+            _stepsSinceLastGrounded = 0;
+            if (_stepsSinceLastJump > 1)
+            {
+                _jumpPhase = 0;
+            }
+
             _jumpPhase = 0;
             if (_groundContactCount > 1)
                 _contactNormal.Normalize();;
@@ -134,20 +157,81 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    bool SnapToGround ()
+    {
+        //If didn't just leave the ground or player just jumped
+        if (_stepsSinceLastGrounded > 1 || _stepsSinceLastJump <= 2)
+        {
+            return false;
+        }
+        
+        // If the player is too fast, don't snap to ground
+        float speed = _velocity.magnitude;
+        if (speed > _maxSnapSpeed)
+        {
+            return false;
+        }
+
+        // If the player has nothing downwards
+        if (!Physics.Raycast(_rb.position, Vector3.down, out RaycastHit hit, _probeDistance)) 
+        {
+            return false;
+        }
+        // If the player is too steep
+        if (hit.normal.y < _minGroundDotProduct) {
+            return false;
+        }
+        // It's a valid ground
+        _groundContactCount = 1;
+        _contactNormal = hit.normal;
+        float dot = Vector3.Dot(_velocity, hit.normal);
+        
+        // If the player is moving up, else don't change
+        if (dot > 0f) 
+        {
+            _velocity = (_velocity - hit.normal * dot).normalized * speed;
+        }
+        return true;
+    }
+
     private void Jump()
     {
-        if (OnGround || _jumpPhase < _maxAirJumps)
-        {
-            _jumpPhase++;
-            float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * _jumpHeight);
-            float alignedSpeed = Vector3.Dot(_velocity, _contactNormal);
-            if (alignedSpeed > 0f) 
-            {
-                jumpSpeed = Mathf.Max(jumpSpeed - alignedSpeed, 0f);
-            }
+        Vector3 jumpDirection;
 
-            _velocity += _contactNormal * jumpSpeed;
+        // If on ground, jump in the normal direction
+        if (OnGround)
+            jumpDirection = _contactNormal;
+        // If on steep, jump alongst it
+        else if (OnSteep)
+        {
+            jumpDirection = _steepNormal;
+            _jumpPhase = 0;
         }
+
+        // If in air, jump in the normal direction
+        else if (_maxAirJumps > 0 && _jumpPhase <= _maxAirJumps)
+        {
+            // Set jump phase to 1 if player was on ground when he jumped
+            if (_jumpPhase == 0)
+                _jumpPhase = 1;
+            jumpDirection = _contactNormal;
+        }
+
+        else
+            return;
+        
+        _stepsSinceLastJump = 0;
+        _jumpPhase++;
+        
+        float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * _jumpHeight);
+        jumpDirection = (jumpDirection + Vector3.up).normalized;
+        float alignedSpeed = Vector3.Dot(_velocity, jumpDirection);
+        if (alignedSpeed > 0f) 
+        {
+            jumpSpeed = Mathf.Max(jumpSpeed - alignedSpeed, 0f);
+        }
+
+        _velocity += _contactNormal * jumpSpeed;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -175,7 +259,24 @@ public class PlayerMovement : MonoBehaviour
                 _groundContactCount++;
                 _contactNormal += normal;
             }
+            else if (normal.y > -0.01f)
+            {
+                _steepContactCount++;
+                _steepNormal += normal;
+            }
         }
+    }
+    
+    bool CheckSteepContacts () {
+        if (_steepContactCount > 1) {
+            _steepNormal.Normalize();
+            if (_steepNormal.y >= _minGroundDotProduct) {
+                _groundContactCount = 1;
+                _contactNormal = _steepNormal;
+                return true;
+            }
+        }
+        return false;
     }
     
     Vector3 ProjectOnContactPlane (Vector3 vector) 
