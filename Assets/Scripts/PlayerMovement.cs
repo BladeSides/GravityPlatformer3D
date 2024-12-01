@@ -148,7 +148,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         //Set Up Axis
-        Vector3 gravity = CustomGravity.GetGravity(_rb.position, out _upAxis);
+        Vector3 gravity = CustomGravity.Instance.GetGravity(_rb.position, out _upAxis);
         
         UpdateState();
         AdjustVelocity();
@@ -266,7 +266,7 @@ public class PlayerMovement : MonoBehaviour
         // If on ground, jump in the normal direction
         if (OnGround)
             jumpDirection = _contactNormal;
-        // If on steep, jump alongst it
+        // If on steep, jump along it
         else if (OnSteep)
         {
             jumpDirection = _steepNormal;
