@@ -24,15 +24,15 @@ public class PlayerMovement : MonoBehaviour
 
     // Metres
     [SerializeField, Range(0f, 10f)]
-    private float _jumpHeight = 2f;
+    public float _jumpHeight = 2f;
 
     // Metres per second
     [SerializeField, Range(0f, 100f)]
-    private float _maxSpeed = 10f;
+    public float _maxSpeed = 10f;
 
     // Metres per second square
     [SerializeField, Range(0f, 100f)]
-    private float _maxAcceleration = 10f;
+    public float _maxAcceleration = 10f;
     
     // Metres per second square
     [SerializeField, Range(0f, 100f)] 
