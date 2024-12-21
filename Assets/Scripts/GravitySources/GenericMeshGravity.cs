@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using Unity.Burst.CompilerServices;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,6 +12,20 @@ public class GenericMeshGravity : GravitySource
     public float gravityStrength = 9.81f;
     public float interpolationStrength = 1f;
     public Vector3 lastCorrectGravity = Vector3.down;
+    public Vector2 redRange, greenRange, blueRange;
+
+
+    private void Start()
+    {
+        UnityEngine.Color color = new UnityEngine.Color();
+        color.r = Random.Range(redRange.x, redRange.y);
+        color.g = Random.Range(greenRange.x, greenRange.y);
+        color.b = Random.Range(blueRange.x, blueRange.y);
+        color.a = 1;
+        //apply
+        GetComponent<Renderer>().material.color = color;
+
+    }
 
     public override Vector3 GetGravity(Vector3 position)
     {
