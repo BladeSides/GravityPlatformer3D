@@ -17,7 +17,9 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 _velocity, _desiredVelocity;
 
     private bool _desiredJump;
-    
+
+    public SphereCollider PlayerSphereCollider;
+
     // Player Parameters
 
     // Metres
@@ -69,6 +71,7 @@ public class PlayerMovement : MonoBehaviour
 
     // Gravity Related Stuff
     Vector3 _upAxis, _rightAxis, _forwardAxis;
+    Vector3 lookDirection = Vector3.forward;
 
     private void OnValidate()
     {
@@ -133,16 +136,14 @@ public class PlayerMovement : MonoBehaviour
             _forwardAxis = ProjectDirectionOnPlane(Vector3.forward, _upAxis);
         }
 
-        Vector3 lookDirection;
         if (playerInput.magnitude > 0.01f)
         {
             lookDirection = _rightAxis * playerInput.x + _forwardAxis * playerInput.y;
         }
-        else
-        {
-            lookDirection = transform.forward;
-        }
-        transform.rotation = Quaternion.LookRotation(lookDirection, _upAxis);
+        
+        Quaternion rotation = Quaternion.LookRotation(lookDirection, _upAxis);
+        transform.rotation = InterpolatedPlayer.LerpSmooth(transform.rotation, rotation, Time.deltaTime
+            ,0.5f,0.1f);
     }
 
     private void FixedUpdate()
