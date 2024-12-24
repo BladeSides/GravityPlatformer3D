@@ -48,9 +48,6 @@ public class GenericMeshGravity : GravitySource
         {
             CustomGravity.Instance.SetGravitySource(this);
         }
-
-
-
     }
     private void OnCollisionStay(Collision collision)
     {

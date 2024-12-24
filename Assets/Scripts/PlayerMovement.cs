@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using KBCore.Refs;
-using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
@@ -142,8 +139,7 @@ public class PlayerMovement : MonoBehaviour
         }
         
         Quaternion rotation = Quaternion.LookRotation(lookDirection, _upAxis);
-        transform.rotation = InterpolatedPlayer.LerpSmooth(transform.rotation, rotation, Time.deltaTime
-            ,0.5f,0.1f);
+        transform.rotation = rotation;
     }
 
     private void FixedUpdate()
@@ -153,7 +149,6 @@ public class PlayerMovement : MonoBehaviour
         
         UpdateState();
         AdjustVelocity();
-        //_velocity = Vector3.MoveTowards(_velocity, _desiredVelocity, maxSpeedChange);
 
         if (_desiredJump) {
             _desiredJump = false;
@@ -297,7 +292,7 @@ public class PlayerMovement : MonoBehaviour
             jumpSpeed = Mathf.Max(jumpSpeed - alignedSpeed, 0f);
         }
 
-        _velocity += _contactNormal * jumpSpeed;
+        _velocity += jumpDirection * jumpSpeed;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -351,9 +346,4 @@ public class PlayerMovement : MonoBehaviour
     {
         return (direction - normal * Vector3.Dot(direction, normal)).normalized;
     }
-    /*
-    Vector3 ProjectOnContactPlane (Vector3 vector) 
-    {
-        return vector - _contactNormal * Vector3.Dot(vector, _contactNormal);
-    }*/
 }

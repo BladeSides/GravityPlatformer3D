@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        string textString = "Press R to Restart\nPress N to move to the next Test\nCurrent Test: ";
+        string textString = "WASD / Space\nPress N to move to the next Test\nCurrent Test: ";
         float baseGravityStrength = -28.89f;
         float gravityStrength = baseGravityStrength;
         float jumpHeight = 2.19f;
@@ -32,6 +32,7 @@ public class GameManager : MonoBehaviour
         {
             //Default values
             gravityStrength *= 0.5f;
+            PlayerMovement._maxAcceleration = playerAcceleration * 1f;
 
             textString += "A1\n";
             textString += "Try jumping around and see how the gravity feels";
@@ -110,6 +111,7 @@ public class GameManager : MonoBehaviour
 
         if (currentTest == 12)
         {
+            PlayerMovement._maxSpeed = playerSpeed * 1f;
             textString += "D1\n";
             PlayerMovement._maxAcceleration = playerAcceleration * 0.5f;
             textString += "Try moving around and see how the movement feels";
@@ -146,8 +148,10 @@ public class GameManager : MonoBehaviour
             {
                 currentTest = 0;
             }
+            PlayerMovement.GetComponent<Rigidbody>().isKinematic = true;
             PlayerMovement.transform.position = playerStartingPos;
             CustomGravity.Instance.SetGravitySource(startingGravSource);
+            PlayerMovement.GetComponent<Rigidbody>().isKinematic = false;
         }
 
         if (Input.GetKeyDown(KeyCode.R))
