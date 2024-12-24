@@ -8,7 +8,7 @@ public class InterpolatedPlayer : MonoBehaviour
     public Transform Player;
     private void Update()
     {
-        transform.position = LerpSmooth(transform.position, Player.position, Time.deltaTime, 0.1f, 0.01f);
+        transform.position = LerpSmooth(transform.position, Player.position, Time.deltaTime, 0.01f, 0.01f);
         transform.rotation = SlerpSmooth(transform.rotation, Player.rotation, Time.deltaTime, 0.5f, 0.01f);
     }
 
