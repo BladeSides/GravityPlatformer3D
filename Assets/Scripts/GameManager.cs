@@ -86,6 +86,7 @@ public class GameManager : MonoBehaviour
         }
         if (currentTest == 8)
         {
+            PlayerMovement._jumpHeight = jumpHeight * 1f;
             textString += "C1\n";
             PlayerMovement._maxSpeed = playerSpeed * 0.5f;
             textString += "Try moving around and see how the movement feels";
